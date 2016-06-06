@@ -8,6 +8,7 @@ firebase.initializeApp(config);
 ImageDealer.REF = firebase;
 var currentUser ;
 var fbProvider = new firebase.auth.FacebookAuthProvider();
+var items = firebase.database().ref("items");
 
 
 /*
@@ -19,11 +20,82 @@ var fbProvider = new firebase.auth.FacebookAuthProvider();
     登入/當初狀態顯示可使用下方 logginOption function
 */
 
+function saveItems(title, price, descrip, pic) {
+  items.push({"title":title, "price": parseInt(price), "descrip":descrip, "photo":pic, "userTime": new Date($.now()).toLocaleString()});
+}
 
+function showAllItems() {
+  items.on("value", readItems);
+}
+showAllItems();
+
+function viewAllItems() {
+  items.once("value", readItems);
+}
+
+function readItems(snapshot) {
+  var allData = snapshot.val();
+  $("#items").empty();
+  for (var itemData in allData){
+    var itemView = createItems(allData[itemData],itemData);
+    $("#items").append(itemView);
+  }
+}
+
+function createItems(itemData,key) {
+  var picPart = createPic(itemData.imgD, key);
+  var wordPart = createIntro(itemData.title, itemData.price, "anonymous");
+  var itemView = $("<div>",{
+    class: "sale-item",
+  }).append(picPart).append(wordPart);
+  return itemView;
+}
+
+function createPic(imgD, key) {
+  var picNode = picBack(imgD).append($("<div>",{class: "white-mask"}).append(
+    $("<div>",{class: "option"}).append(
+      $("<h6>", {text: "view"})
+    ).append($("<h6>", {text: "edit", on:{
+          click: function (e) {
+            nowItem = key;
+            var data = getItemByURL("items/"+ key);
+            data.once("value", function (snapshot) {
+              updateModal(e, snapshot.val());
+            })
+          }
+        }
+  }))
+  ));
+  return picNode;
+}
+
+function picBack(imgD) {
+  //var bb = new Blob([imgD],{type:'image/jpeg'})
+  //var shortURL = URL.createObjectURL(bb);
+  //console.log(shortURL);
+  return $("<div>",{
+    class: "pic",
+  }).css("background-image", 'url('+ imgD + ')');
+}
+
+function createIntro(title, price, author) {
+  return $("<div>", {class: "word"}).append(
+    $("<div>", {class: "name-price"}).append(
+      $("<p>",{text: title})
+    ).append(
+      $("<p>",{text: '$' + price})
+    )
+  ).append(
+    $("<div>", {class: "seller"}).append(
+      $("<a>",{href: "#", text: author})
+    )
+  )
+}
 
 $("#signin").click(function () {
   firebase.auth().signInWithPopup(fbProvider).then(function(result){
     // 登入後的頁面行為
+    logginOption(true);
   }).catch(function(error){
   var errorCode = error.code;
   var errorMessage = error.message;
@@ -32,14 +104,32 @@ $("#signin").click(function () {
 });
 
 $("#signout").click(function () {
-
+  firebase.auth().signOut().then(function() {
     // 登出後的頁面行為
-
+    logginOption(false);
+  },function (error) {
+  console.log(error.code);
+  }); 
 });
+
 
 $("#submitData").click(function () {
     // 上傳新商品
+  var dataArr = $("#item-info").serializeArray();
+  var picFile = $("#picData")[0].files[0];
+  var picTrans = new FileReader();
+  if (dataArr[0].value != null && dataArr[1].value != null && dataArr[2].value != null && picFile ) {
+    //check if it is picture(not yet)
+
+    picTrans.readAsDataURL(picFile);
+    picTrans.onloadend = (function (imge) {return function (e) {
+        imge.src = e.target.result;
+        saveItems(dataArr[0].value, dataArr[1].value, dataArr[2].value, e.target.result);
+    }})(picFile);
+    $("#upload-modal").modal('hide');
+  }
 });
+
 
 $("#editData").click(function () {
     // 編輯商品資訊
@@ -58,6 +148,26 @@ $("#removeData").click(function () {
     3. 顯示價格低於 NT$9999 的商品
 
 */
+
+function selectExpItems() {
+  items.orderByChild("price").startAt(10000).on("value", readItems);
+}
+
+function selectCheapItems() {
+  items.orderByChild("price").endAt(9999).on("value", readItems);
+}
+
+$(".dropdown-menu > li > a:nth-of-type(1)").click(function (event) {
+  viewAllItems();
+});
+
+$(".dropdown-menu > li > a:nth-of-type(2)").click(function (event) {
+  selectExpItems(event);
+});
+
+$(".dropdown-menu > li > a:nth-of-type(3)").click(function (event) {
+  selectCheapItems();
+});
 
 
 function logginOption(isLoggin) {
