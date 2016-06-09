@@ -309,9 +309,7 @@ class MessageBox {
   }
   refresh(){
     this._dialogDom.find(".messages").empty();
-    for (var i = 0; i < this._dialogs.length; i++) {
-      this._dialogs.pop();
-    }
+    this._dialogs=[];
   }
   set submitFunction(subFunc){
     this._submitFunc = subFunc;
