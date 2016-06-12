@@ -118,6 +118,18 @@ $("#removeData").click(function () {
 
 */
 
+$(".dropdown-menu > li > a:nth-of-type(1)").click(function () {
+  reProduceAll();
+});
+
+$(".dropdown-menu > li > a:nth-of-type(2)").click(function () {
+   items.orderByChild("price").startAt(10000).on("value", reProduceAll());
+});
+
+$(".dropdown-menu > li > a:nth-of-type(3)").click(function () {
+  items.orderByChild("price").endAt(9999).on("value", reProduceAll());
+});
+
 
 function logginOption(isLoggin) {
   if (isLoggin) {
@@ -201,7 +213,7 @@ function produceSingleItem(sinItemData){
         判斷使用者是否有登入，如果有登入就讓 #message 容器顯示輸入框。
         在 MessageBox 上面註冊事件，當 submit 時將資料上傳。
       */
-      if (currentUser) {
+      // if (currentUser) {
         // $("#message").append(messBox.inputBox);
 
         // messBox.inputBox.keypress(function (e) {
@@ -214,7 +226,7 @@ function produceSingleItem(sinItemData){
         //     */
         //   }
         // });
-      }
+      // }
 
     /*
     從資料庫中抓出message資料，並將資料填入MessageBox
@@ -227,7 +239,7 @@ function produceSingleItem(sinItemData){
     /*
     如果使用者有登入，替 editBtn 監聽事件，當使用者點選編輯按鈕時，將資料顯示上 uploadModal。
     */
-    if (currentUser) {
+    if (currentUser == sinItemData.seller) {
         product.editBtn.click(function(){
         uploadmodal.editData(sinItemData);
         uploadmodal.callImage(sinItemData.itemKey, sinItemData.seller)
