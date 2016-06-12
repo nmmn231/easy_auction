@@ -118,16 +118,32 @@ $("#removeData").click(function () {
 
 */
 
-$(".dropdown-menu > li > a:nth-of-type(1)").click(function () {
+$("#selectAll").click(function () {
   reProduceAll();
 });
 
-$(".dropdown-menu > li > a:nth-of-type(2)").click(function () {
-   items.orderByChild("price").startAt(10000).on("value", reProduceAll());
+$("#selectExpensive").click(function () {
+  items.orderByChild("price").startAt(10000).on("value", function(data){
+    $("#items").empty();
+    //利用for in存取
+    var allItems = data.val();
+    for (var itemKey in allItems ){
+      allItems[itemKey].itemKey = itemKey;
+      produceSingleItem(allItems[itemKey]);
+    }
+  });
 });
 
-$(".dropdown-menu > li > a:nth-of-type(3)").click(function () {
-  items.orderByChild("price").endAt(9999).on("value", reProduceAll());
+$("#selectCheap").click(function () {
+  items.orderByChild("price").endAt(9999).on("value", function(data){
+    $("#items").empty();
+    //利用for in存取
+    var allItems = data.val();
+    for (var itemKey in allItems ){
+      allItems[itemKey].itemKey = itemKey;
+      produceSingleItem(allItems[itemKey]);
+    }
+  });
 });
 
 
