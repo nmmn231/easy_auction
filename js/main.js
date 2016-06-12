@@ -239,7 +239,7 @@ function produceSingleItem(sinItemData){
     /*
     如果使用者有登入，替 editBtn 監聽事件，當使用者點選編輯按鈕時，將資料顯示上 uploadModal。
     */
-    if (currentUser == sinItemData.seller) {
+    if (currentUser.uid == sinItemData.seller) {
         product.editBtn.click(function(){
         uploadmodal.editData(sinItemData);
         uploadmodal.callImage(sinItemData.itemKey, sinItemData.seller)
